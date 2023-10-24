@@ -1,0 +1,23 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="UTF-8">
+    <title>Arduino Serial Monitor</title>
+    <script>
+      var socket = new WebSocket("ws://localhost:5000/ws");
+      socket.onmessage = function(event) {
+        document.getElementById("data").innerHTML = event.data;
+      };
+      
+      function sendCommand(command) {
+        socket.send(command);
+      }
+    </script>
+  </head>
+  <body>
+    <div id="data"></div>
+    <button onclick="sendCommand('start')">Start</button>
+    <button onclick="sendCommand('stop')">Stop</button>
+  </body>
+</html>
+
