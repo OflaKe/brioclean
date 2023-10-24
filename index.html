@@ -1,0 +1,92 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Serial Data</title>
+    <!-- Add the necessary libraries -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/socket.io/3.1.3/socket.io.js"></script>
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    <link rel="stylesheet" type="text/css" href="{{ url_for('static', filename='styles.css') }}">
+</head>
+<body>
+    <h1>Serial Data</h1>
+    <div class="lcd">
+        <p id="serial_data"></p>
+    </div>
+    <form>
+        <input type="text" id="text_input">
+        <input type="button" value="Send" onclick="send_data()">
+    </form>
+    <!-- Add buttons to send serial commands -->
+    <h2>Serial Buttons</h2>
+    
+    <form onsubmit="event.preventDefault();">
+
+        <button onclick="sendSerial('FREQ100')">FREQ100</button>
+        <button onclick="sendSerial('FREQ100000')">FREQ100000</button>
+        <button onclick="sendSerial('VOLTage 0.3')">VOLTage 0.3</button>
+        <button onclick="sendSerial('VOLTage 0.6')">VOLTage 0.6</button>
+        <button onclick="sendSerial('VOLTage 0.9')">VOLTage 0.9</button>
+        <button onclick="sendSerial('FUNCtion:impa Z')">FUNCTion:impa Z</button>
+        <button onclick="toggleHold()">Hold</button>
+    </form>
+    <p id="average_value" class="average"></p>
+    <script>
+        var socket = io.connect('http://localhost:8000');
+
+        let sum = 0;
+        let count = 0;
+
+        // Function to send serial commands
+        function sendSerial(event, command) {
+            event.preventDefault();
+            socket.emit('send_serial', command);
+        }
+        
+        function toggleHold() {
+        $.ajax({
+            url: '/hold',
+            type: 'POST',
+            success: function(response) {
+                console.log(response);
+            }
+        });
+    }
+
+        socket.on('connect', function() {
+            console.log('Connected to server');
+        });
+
+        socket.on('disconnect', function() {
+            console.log('Disconnected from server');
+        });
+
+        socket.on('send_data', function(data) {
+            console.log('Received Data: ' + data);
+            document.getElementById('serial_data').innerHTML = data;
+            
+            sum += parseInt (data) 
+            count += 1 
+            console.log('Received Average: ' +  (sum)/count );
+            document.getElementById('average_value').innerHTML = 'The average value is: ' + (sum)/count;
+
+        });
+
+        socket.on('send_average', function(average) {
+
+            // console.log('Received Average: ' + average);
+            // document.getElementById('average_value').innerHTML = 'The average value is: ' + average;
+            document.getElementById('average_value').innerHTML = "data";
+
+
+
+            // document.getElementById('average_value').style.display = 'block';
+        });
+
+
+        function send_data() {
+            var input_value = document.getElementById('text_input').value;
+            socket.emit('send_data', input_value);
+        }
+    </script>
+</body>
+</html>
